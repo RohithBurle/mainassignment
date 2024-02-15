@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helloWorld-boot-docker
+  namespace: production
+  labels:
+    app: helloWorld-boot-docker
+    dns: route53
+
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      protocol: TCP
+      port: 61005
+      targetPort: http
+  selector:
+    app: helloWorld-boot-docker

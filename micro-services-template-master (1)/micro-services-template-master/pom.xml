@@ -1,0 +1,183 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.bt.ms.im.services</groupId>
+	<artifactId>micro-services-template</artifactId>
+	<version>1.0.1</version>
+	<packaging>jar</packaging>
+	<name>micro-services-template</name>
+	<url>http://maven.apache.org</url>
+	<parent>
+		<groupId>com.bt.ms.im.standards</groupId>
+		<artifactId>super_pom-services</artifactId>
+		<version>3.2.14</version>
+	</parent>
+	<!--	<repositories>
+		<repository>
+			<id>Logging</id>
+			<url>C:\Users\rohith_burle\.m2\repository</url>
+		</repository>
+	</repositories>-->
+	<dependencies>
+		<!--
+		https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
+		<dependency>
+			<groupId>org.sonarsource.scanner.maven</groupId>
+			<artifactId>sonar-maven-plugin</artifactId>
+			<version>3.2</version>
+		</dependency>
+
+		<!--
+		https://mvnrepository.com/artifact/org.apache.httpcomponents.core5/httpcore5 -->
+		<dependency>
+			<groupId>org.apache.httpcomponents.core5</groupId>
+			<artifactId>httpcore5</artifactId>
+			<version>5.0</version><!--$NO-MVN-MAN-VER$-->
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-core -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-dependencies</artifactId>
+			<version>3.2.2</version>
+			<type>pom</type>
+			<scope>import</scope>
+		</dependency>
+
+		<!-- Enable only if SOAP call is made in project -->
+		<!-- <dependency>
+			<groupId>org.springframework.ws</groupId>
+			<artifactId>spring-ws-core</artifactId>
+		</dependency> -->
+		<dependency>
+			<groupId>com.bt.ms.im.standards</groupId>
+			<artifactId>Logging</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<!--	<dependency>
+			<groupId>com.bt.ms.im.utilities</groupId>
+			<artifactId>exception-handler-util-generic</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.bt.ms.im.utilities</groupId>
+			<artifactId>exception-handler-util-clientbase</artifactId>
+	<version>1.0.0</version>
+		</dependency>-->
+		<dependency>
+			<groupId>com.bt.ms.im.utilities</groupId>
+			<artifactId>exception-handler-util-generic</artifactId>
+			<version>0.0.4-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.bt.ms.im.utilities</groupId>
+			<artifactId>exception-handler-util-clientbase</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-spring</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>5.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>1.3.7</version>
+				<executions>
+					<execution>
+						<id>default</id>
+						<phase>install</phase>
+						<goals>
+							<goal>build</goal>
+							<goal>push</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<repository>
+						registry.docker.nat.bt.com/im-microservices/${project.artifactId}</repository>
+					<username></username>
+					<password></password>
+					<tag>${project.version}</tag>
+					<useMavenSettingsForAuth>true</useMavenSettingsForAuth>
+					<buildArgs>
+						<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+					</buildArgs>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.artifactId}</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<reuseForks>false</reuseForks>
+					<forkCount>1</forkCount>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>sonar</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<sonar.host.url> ${env.SONAR_API} </sonar.host.url>
+				<sonar.coverage.exclusions>
+					**/entity/**,
+					**/dto/*,
+					**/util/*,
+					**/*Application.java,
+					**/config/*,
+					**/bptm/*,
+					**/aop/*,
+					**/annotation/*
+				</sonar.coverage.exclusions>
+			</properties>
+		</profile>
+	</profiles>
+
+	<!--	<repositories>
+		<repository>
+			<id>APP15042_Microservices-Layer_maven</id>
+			 <url>https://agile.nat.bt.com/nexus/APP15042_Microservices-Layer_maven</url>
+		</repository>
+	</repositories>-->
+
+</project>

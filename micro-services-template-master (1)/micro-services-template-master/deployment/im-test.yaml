@@ -1,0 +1,18 @@
+image:
+  name: micro-services-template
+  tag: 1.0.0
+namespace: im-test
+msName: micro-services-template
+service:
+  nodePort: 12345
+appProperties:
+  spring.application.name  : micro-services-template
+  server.port : 9086
+  spring.jackson.default-property-inclusion: NON_NULL
+  management.endpoint.metrics.enabled : true
+  management.endpoint.prometheus.enabled : true
+  management.metrics.export.prometheus.enabled : true
+  management.health.redis.enabled : false
+  service.connection.timeout : 5000
+  service.read.timeout : 20000
+  spring.sleuth.trace-id128 : true

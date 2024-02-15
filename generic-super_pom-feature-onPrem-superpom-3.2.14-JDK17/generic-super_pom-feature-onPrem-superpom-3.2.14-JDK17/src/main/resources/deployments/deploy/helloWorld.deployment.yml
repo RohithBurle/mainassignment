@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: helloWorld-boot-docker
+
+spec:
+  minReadySeconds: 15
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: helloWorld-boot-docker
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: helloWorld-boot-docker-config
+        - name: secrets
+          secret:
+            secretName: helloWorld-boot-docker-secrets
+      containers:
+        - name: helloWorld-boot-docker
+ 
+          image: yashas4g1/microservices/helloWorld-boot-docker:latest
+          imagePullPolicy: IfNotPresent
+          name: helloWorld-boot-docker
+          command:
+            - 'sleep 86400'
+          ports:
+          - containerPort: 61000
+            name: http
+          volumeMounts:
+            - name: secrets
+              mountPath: /secrets
+              readOnly: true
+            - name: config
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+          livenessProbe:
+            httpGet:
+              path: /_health
+              port: 5000
+            initialDelaySeconds: 10

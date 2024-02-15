@@ -1,0 +1,48 @@
+#Updated on -11-september-2020
+
+image: registry.docker.nat.bt.com/im-microservices/maven:3.9.1-amazoncorretto-17
+
+#various stage to execute the job
+stages:
+  - build
+  - release
+
+#script here will run before each job
+#before_script:
+#  - PATH="${PATH}:${M2_HOME}/bin"
+
+job build:
+  stage: build
+  tags:
+    - mvn-conf
+  script:
+    - mvn -Dmvn_user=$MAVEN_USER -Dmvn_pwd=$MAVEN_PASSWORD clean install $MAVEN_ARGS
+  artifacts:
+    paths:
+      - $PROJECT_PATH/target/
+
+job release:
+  stage: release
+  tags:
+    - mvn-conf
+  #image: registry.docker.nat.bt.com/im-microservices/gitlab-nexus-iq-pipeline
+  dependencies:
+    - job build
+  script:
+    - TAG=$(mvn --non-recursive help:evaluate -Dexpression=project.version | grep -v '\[.*')
+    - SERVICE_NAME=$(mvn --non-recursive help:evaluate -Dexpression=project.artifactId | grep -v '\[.*')
+    - PACKAGE=$(mvn --non-recursive help:evaluate -Dexpression=project.packaging | grep -v '\[.*')
+    #- mv $PROJECT_PATH/target/$SERVICE_NAME-$TAG.$PACKAGE $PROJECT_PATH/target/
+    #- cd $PROJECT_PATH
+    #- /sonatype/evaluate -i $SERVICE_NAME -r cli.log target/$SERVICE_NAME-$TAG.$PACKAGE
+    #- criticalCount=$(jq -r '.policyEvaluationResult.criticalPolicyViolationCount' cli.log)
+    #- severeCount=$(jq -r '.policyEvaluationResult.severePolicyViolationCount' cli.log)
+    #- if [[ $criticalCount -gt $criticalThreshold ]] || [[ $severeCount -gt severeThreshold ]]; then echo "Vulnerabilty is more than threshold. - FAILURE" ; if [[ ${SKIP_IQ_CHECK} == "Y" ]] || [[ ${SKIP_IQ_CHECK} == "y" ]] ;then echo "IQ server policy vulnerability job failure is skipped " ; else echo "Connect to IQ server for vulnerabilities check. " ;  exit 1; fi;else echo "IQ server - SUCCESS." ; fi;
+    - mvn -Dmvn_user=$MAVEN_PUSH_USER -Dmvn_pwd=$MAVEN_PUSH_PASSWORD clean deploy $MAVEN_ARGS
+  only:
+    - web
+  #artifacts:
+  #  name: "policy-eval-${CI_PROJECT_NAME}"
+  #  paths:
+  #    - cli.log
+  #    - ${CI_PROJECT_NAME}-policy-eval-report.html

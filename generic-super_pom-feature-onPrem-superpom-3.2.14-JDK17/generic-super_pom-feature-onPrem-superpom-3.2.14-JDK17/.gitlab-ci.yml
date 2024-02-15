@@ -1,0 +1,32 @@
+image: registry.docker.nat.bt.com/im-microservices/maven:3.9.1-amazoncorretto-17
+#image: registry.docker.nat.bt.com/im-microservices/maven:3.6.3-amazoncorretto-11
+#image: maven:3.6.3-jdk-11-slim
+# image: kajal21/docker_java:1.0.0 
+stages:
+  - build
+  - release
+  
+#script here will run before each job
+#before_script:  
+ # - PATH="${PATH}:${M2_HOME}/bin"
+  
+job build:
+  stage: build
+  tags:
+    - mvn-conf
+  script:
+    - mvn -Dmvn_user=$MAVEN_USER -Dmvn_pwd=$MAVEN_PASSWORD clean install -U $MAVEN_ARGS
+  artifacts:
+    paths:
+      - $PROJECT_PATH/target/
+    
+job release:
+  stage: release
+  tags:
+    - mvn-conf
+  dependencies:
+    - job build
+  script:
+  - mvn -Dmvn_user=$MAVEN_PUSH_USER -Dmvn_pwd=$MAVEN_PUSH_PASSWORD clean deploy $MAVEN_ARGS
+  only:
+    - web
